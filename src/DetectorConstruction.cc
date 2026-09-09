@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 // Author: Pelagia Tsintari, pelagia.tsin@gmail.com
-// 
+// Edits by Ava Nykamp, avanykamp@gmail.com
 //
 
 #include "DetectorConstruction.hh"
@@ -54,7 +54,11 @@
 
 #include "G4SystemOfUnits.hh"
 
-//#include "CADMesh.hh" //uncomment if you want to use the CAD drawing of JENSA chamber - comment out lines 127 - 187
+#include "G4ExtrudedSolid.hh"
+#include <vector>
+
+
+#include "CADMesh.hh" //uncomment if you want to use the CAD drawing of JENSA chamber - comment out lines 127 - 187
 
 DetectorConstruction::DetectorConstruction(AnalysisManager* analysis_manager)
 :G4VUserDetectorConstruction(),
@@ -68,8 +72,6 @@ DetectorConstruction::~DetectorConstruction(){}
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
-  analysis->ConfigureDetectorOutput(DSSD, IC, Si_monitor);
-
   G4NistManager* nist = G4NistManager::Instance();
 
   G4Material* vacuum = nist->FindOrBuildMaterial("G4_Galactic");
@@ -102,7 +104,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     EJ301->AddElement(elCarbon, 90.8*perCent); 
 
   // test with all hydrogen target
-  G4Material* h_tar = new G4Material("h_tar", 3.5841e-7*g/cm3, 1, kStateSolid); // 6.5 torr = 3.5841e-07 g/cm3
+  G4Material* h_tar = new G4Material("h_tar", 8.822e-7*g/cm3, 1, kStateGas); // 6.5 torr = 3.5841e-07 g/cm3, 8.0 torr = 8.822e-07 g/cm3
     h_tar->AddElement(elHydrogen,1); 
 
   G4Material* c_tar = new G4Material("c_tar", 1.15193*g/cm3, 1, kStateSolid);
@@ -130,11 +132,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4Material* helium = new G4Material("HeliumGas",0.00272*g/cm3,1,kStateGas,293.15*kelvin); //,16.331*atmosphere
   helium->AddElement(He, 1.0);
 
+
+  //Rotations:
   G4RotationMatrix* rotX90 = new G4RotationMatrix(); rotX90->rotateX(90*deg);
   G4RotationMatrix* rotY90 = new G4RotationMatrix(); rotY90->rotateY(90*deg);
   G4RotationMatrix* rotZ90 = new G4RotationMatrix(); rotZ90->rotateZ(90*deg);
   G4RotationMatrix* rotY50 = new G4RotationMatrix(); rotY50->rotateY(50*deg);
   G4RotationMatrix* rotY310 = new G4RotationMatrix(); rotY310->rotateY(310*deg);
+  G4RotationMatrix* rotY270 = new G4RotationMatrix(); rotY270->rotateY(270*deg);
 
   //Define volumes
   G4double worldx = 300.0*cm; 
@@ -162,17 +167,94 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     // G4Box* Target = new G4Box("Target",Tar_x,Tar_y,Tar_z/2);
 
     // Jet gas target
-    G4double Tar_d = 3.30*mm; // nozzle E
-    G4double Tar_z = 10*mm; // distance nozzle to catcher - not sure
+    //G4double Tar_d = 3.30*mm; // nozzle E
+    //G4double Tar_z = 10*mm; // distance nozzle to catcher - not sure
 
-    G4Tubs* Target = new G4Tubs("Target", 0, Tar_d/2, Tar_z/2, 0, 360*deg);
-    G4LogicalVolume* logical_Tar = new G4LogicalVolume(Target, helium, "Tar_log", 0,0,0); 
+    //G4Tubs* Target = new G4Tubs("Target", 0, Tar_d/2, Tar_z/2, 0, 360*deg);
+    //G4LogicalVolume* logical_Tar = new G4LogicalVolume(Target, helium, "Tar_log", 0,0,0); 
+
+    //Target vacuum box
+    // G4double Tar_x = 25*mm;
+    // G4double Tar_y = 23.4*mm;
+    // G4double Tar_z = 96.85*mm;
+    // G4Box* Target = new G4Box("Target", Tar_x, Tar_y, Tar_z);
+
+    // G4LogicalVolume* logical_Tar = new G4LogicalVolume(Target, vacuum, "Tar_log", 0,0,0);
+
+    //Checking placements around origin
+    //G4double Tar_x = 20*cm;
+    //G4double Tar_y = 2*mm;
+    //G4double Tar_z = 2*mm;
+    //G4Box* Target = new G4Box("Target", Tar_x, Tar_y, Tar_z);
+
+    //G4double Tar_x = 2*mm;
+    //G4double Tar_y = 2*mm;
+    //G4double Tar_z = 20*cm;
+    //G4Box* Target = new G4Box("Target", Tar_x, Tar_y, Tar_z);
+
+    //hydrogen target
+    G4double Tar_x = 18.5*mm;
+    G4double Tar_y = 7*mm;
+    G4double Tar_z = 48.142*mm;
+    G4Box* Target = new G4Box("Target", Tar_x, Tar_y, Tar_z);
+    
+    G4LogicalVolume* logical_Tar = new G4LogicalVolume(Target, h_tar, "Tar_log", 0,0,0);
+
+
+    G4double Tar2_x = 18.5*mm;
+    G4double Tar2_y = 10.7*mm;
+    G4double Tar2_z = 38.6*mm;
+
+    G4Box* Target2 = new G4Box("Target2", Tar2_x, Tar2_y, Tar2_z);
+
+    G4LogicalVolume* logical_Tar2 = new G4LogicalVolume(Target2, h_tar, "Tar2_log", 0, 0, 0);
+
+
+    G4double Tar3_x = 18.5*mm;
+    G4double Tar3_y = 22.837*mm;
+    G4double Tar3_z = 24*mm;
+
+    G4Box* Target3 = new G4Box("Target3", Tar3_x, Tar3_y, Tar3_z);
+
+    G4LogicalVolume* logical_Tar3 = new G4LogicalVolume(Target3, h_tar, "Tar3_log", 0, 0, 0);
+
+
+    //std::vector<G4TwoVector> triangle;
+    //triangle.push_back(G4TwoVector(29.058*mm, -7*mm));
+    //triangle.push_back(G4TwoVector( 48.142*mm, -7*mm));
+    //triangle.push_back(G4TwoVector(  29.058*mm,  -28.4*mm));
+    //G4double halfLength = 18.5*mm;
+
+    //G4ExtrudedSolid* prism =new G4ExtrudedSolid("TriangularPrism", triangle, halfLength, G4TwoVector(0,0), 1.0,G4TwoVector(0,0), 1.0);
+    //G4LogicalVolume* logical_prism = new G4LogicalVolume(prism, h_tar, "Prism_log");
+
+
 
     //Visualisation attributes
-    new G4PVPlacement(rotX90, G4ThreeVector(0,0,0), logical_Tar, "Tar_phys", logical_world, false, 0, true);
-    G4VisAttributes vis_Tar(G4Colour(250, 0, 127)); //numbers stand for colors of red, green, and blue respectively
+    new G4PVPlacement(0, G4ThreeVector(0,0,0), logical_Tar, "Tar_phys", logical_world, false, 0, true);
+    G4VisAttributes vis_Tar(G4Colour(100, 0, 100)); //numbers stand for colors of red, green, and blue respectively
     vis_Tar.SetForceSolid(true);
     logical_Tar -> SetVisAttributes(vis_Tar);
+
+
+    new G4PVPlacement(0, G4ThreeVector(0,-17.7*mm,-9.542*mm), logical_Tar2, "Tar2_phys", logical_world, false, 0, true);
+    G4VisAttributes vis_Tar2(G4Colour(100, 0, 100)); //numbers stand for colors of red, green, and blue respectively
+    vis_Tar2.SetForceSolid(true);
+    logical_Tar -> SetVisAttributes(vis_Tar2);
+
+
+    new G4PVPlacement(0, G4ThreeVector(0,-51.237*mm,-24.142*mm), logical_Tar3, "Tar3_phys", logical_world, false, 0, true);
+    G4VisAttributes vis_Tar3(G4Colour(100, 0, 100)); //numbers stand for colors of red, green, and blue respectively
+    vis_Tar3.SetForceSolid(true);
+    logical_Tar -> SetVisAttributes(vis_Tar3);
+
+    //new G4PVPlacement(0, rotY90, G4ThreeVector(0,0,0), logical_prism, "Prism_phys", logical_world, false, 0,true);
+    //G4VisAttributes vis_Prism(G4Colour(100, 0, 100)); //numbers stand for colors of red, green, and blue respectively
+    //vis_Prism.SetForceSolid(true);
+    //logical_Prism -> SetVisAttributes(vis_Prism);
+
+
+
     
     if(stripper)
     {
@@ -224,77 +306,136 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   new G4PVPlacement(rotX90, G4ThreeVector(0,100*mm,0), log_source_mnt,"source_mnt_phys", logical_world, false, 0, true);
   log_source_mnt->SetVisAttributes(G4Color::White()); */
 
-  G4double innerRadiusOfTheSphere = 3.*mm;
-  G4double outerRadiusOfTheSphere = 3.5*mm;
-  G4Sphere* Sphere = new G4Sphere("Sphere_solid", innerRadiusOfTheSphere, outerRadiusOfTheSphere, 0.0, 360*deg, 0.0, 180*deg);
-  G4LogicalVolume* logical_Sphere = new G4LogicalVolume(Sphere, vacuum, "Sphere_log", 0, 0, 0);
-  if(source) new G4PVPlacement(0, G4ThreeVector(0,0,-29*mm), logical_Sphere, "Sphere_phys", logical_world, false, 0, true);
-  else new G4PVPlacement(0, G4ThreeVector(0,0,0), logical_Sphere, "Sphere_phys", logical_world, false, 0, true);
-  logical_Sphere->SetVisAttributes(G4Color::Yellow());
+  //G4double innerRadiusOfTheSphere = 10.*mm;
+  //G4double outerRadiusOfTheSphere = 15*mm;
+  //G4Sphere* Sphere = new G4Sphere("Sphere_solid", innerRadiusOfTheSphere, outerRadiusOfTheSphere, 0.0, 360*deg, 0.0, 180*deg);
+  //G4LogicalVolume* logical_Sphere = new G4LogicalVolume(Sphere, vacuum, "Sphere_log", 0, 0, 0);
+  //if(source) new G4PVPlacement(0, G4ThreeVector(0,0,-29*mm), logical_Sphere, "Sphere_phys", logical_world, false, 0, true);
+  //else new G4PVPlacement(0, G4ThreeVector(0,0,0), logical_Sphere, "Sphere_phys", logical_world, false, 0, true);
+  //logical_Sphere->SetVisAttributes(G4Color::Yellow());
 
   if(chamber)
   {
-    //JENSA Chamber
-    G4double chmbInnerR = (315.3/2)*mm;
-    G4double chmbOuterR = (323.8/2)*mm;
-    G4double chmbLength = (150*mm); //(534.0/2)*mm;
+    //Extended target chamber
+    auto block = CADMesh::TessellatedMesh::FromSTL("../CADFiles/ShellwithOrigin.STL");
+    block->SetOffset(G4ThreeVector(0,0,0));
+    auto logical_block = new G4LogicalVolume( block->GetSolid(), aluminum, "block_log", 0, 0, 0 );
+    new G4PVPlacement(rotY90, G4ThreeVector(120*mm, -131.75*mm, -228.6*mm), logical_block, "block_phys", logical_world, false, 0, true);
+    G4VisAttributes vis_block(G4Colour(10, 10, 10)); //numbers stand for colors of red, green, and blue respectively
+    vis_block.SetForceSolid(true);
+    logical_block -> SetVisAttributes(vis_block);
+      
+      
+    auto chamber = CADMesh::TessellatedMesh::FromSTL("../CADFiles/ChamberwithOrigin.STL");
+    chamber->SetOffset(G4ThreeVector(0,0,0));
+    //G4RotationMatrix* rotation = new G4RotationMatrix();
+    //rotation->rotateX(chamberXangle[90]*deg);
+    auto logical_chamber = new G4LogicalVolume( chamber->GetSolid(), aluminum, "chamber_log", 0, 0, 0 );
+    new G4PVPlacement(rotY90, G4ThreeVector(120*mm, -131.75*mm, -201.83*mm), logical_chamber, "chamber_phys", logical_world, false, 0, true);
+    G4VisAttributes vis_chamber(G4Colour(10,10, 10)); //numbers stand for colors of red, green, and blue respectively
+    vis_chamber.SetForceSolid(true);
+    logical_chamber -> SetVisAttributes(vis_chamber);
 
-    G4double beampipeInnerR = (94.0/2)*mm;
-    G4double beampipeOuterR = (102.0/2)*mm;
-    G4double beampipeLength = (40.23/2)*mm;
+      
+    auto wall = CADMesh::TessellatedMesh::FromSTL("../CADFiles/ChamberCover.STL");
+    wall->SetOffset(G4ThreeVector(0,0,0));
+    auto logical_wall = new G4LogicalVolume( wall->GetSolid(), aluminum, "wall_log", 0, 0, 0 );
+    new G4PVPlacement(rotY90, G4ThreeVector(-18.5*mm, -91.925*mm, -54.14*mm), logical_wall, "wall_phys", logical_world, false, 0, true);
+    G4VisAttributes vis_wall(G4Colour(10, 10, 10)); //numbers stand for colors of red, green, and blue respectively
+    vis_wall.SetForceSolid(true);
+    logical_wall -> SetVisAttributes(vis_wall);
+    
+    
+    // auto outlet = CADMesh::TessellatedMesh::FromSTL("../CADFiles/gas_output.STL");
+    // outlet->SetOffset(G4ThreeVector(0,0,0));
+    // auto logical_outlet = new G4LogicalVolume( outlet->GetSolid(), aluminum, "outlet_log", 0, 0, 0 );
+    // new G4PVPlacement(rotY90, G4ThreeVector(0, 0, 0), logical_outlet, "outlet_phys", logical_world, false, 0, true);
+    // G4VisAttributes vis_outlet(G4Colour(10, 10, 10)); //numbers stand for colors of red, green, and blue respectively
+    // vis_outlet.SetForceSolid(true);
+    // logical_outlet -> SetVisAttributes(vis_outlet);
+
+
+    // auto pip30 = CADMesh::TessellatedMesh::FromSTL("../CADFiles/pip30_house.STL");
+    // pip30->SetOffset(G4ThreeVector(0,0,0));
+    // auto logical_pip30 = new G4LogicalVolume( pip30->GetSolid(), aluminum, "pip30_log", 0, 0, 0 );
+    // new G4PVPlacement(rotY90, G4ThreeVector(0, 0, 0), logical_pip30, "pip30_phys", logical_world, false, 0, true);
+    // G4VisAttributes vis_pip30(G4Colour(10, 10, 10)); //numbers stand for colors of red, green, and blue respectively
+    // vis_pip30.SetForceSolid(true);
+    // logical_pip30 -> SetVisAttributes(vis_pip30);
+
+
+    // auto pip45 = CADMesh::TessellatedMesh::FromSTL("../CADFiles/pips45_house.STL");
+    // pip45->SetOffset(G4ThreeVector(0,0,0));
+    // auto logical_pip45 = new G4LogicalVolume( pip45->GetSolid(), aluminum, "pip45_log", 0, 0, 0 );
+    // new G4PVPlacement(rotY90, G4ThreeVector(0, 0, 0), logical_pip45, "pip45_phys", logical_world, false, 0, true);
+    // G4VisAttributes vis_pip45(G4Colour(10, 10, 10)); //numbers stand for colors of red, green, and blue respectively
+    // vis_pip45.SetForceSolid(true);
+    // logical_pip45 -> SetVisAttributes(vis_pip45);
+
+
+
+
+    //JENSA Chamber
+    //G4double chmbInnerR = (315.3/2)*mm;
+    //G4double chmbOuterR = (323.8/2)*mm;
+    //G4double chmbLength = (150*mm); //(534.0/2)*mm;
+
+    //G4double beampipeInnerR = (94.0/2)*mm;
+    //G4double beampipeOuterR = (102.0/2)*mm;
+    //G4double beampipeLength = (40.23/2)*mm;
     
     //Create a horizontal and vertical tube
-    G4Tubs* chamber_h = new G4Tubs("chamber_h", chmbInnerR , chmbOuterR, chmbLength, 0, 360*deg);
-    G4Tubs* chamber_v = new G4Tubs("chamber_v", chmbInnerR , chmbOuterR, chmbLength*1.3, 0, 360*deg);
+    //G4Tubs* chamber_h = new G4Tubs("chamber_h", chmbInnerR , chmbOuterR, chmbLength, 0, 360*deg);
+    //G4Tubs* chamber_v = new G4Tubs("chamber_v", chmbInnerR , chmbOuterR, chmbLength*1.3, 0, 360*deg);
 
     //Create th perpenticular cut in shape of another tube that goes through it
-    G4Tubs* chamberCut_v = new G4Tubs("chamberCut_v", 0, chmbOuterR, chmbLength*1.1, 0, 360*deg);
+    //G4Tubs* chamberCut_v = new G4Tubs("chamberCut_v", 0, chmbOuterR, chmbLength*1.1, 0, 360*deg);
     
     //Create the front and back cut for the beam pipe
-    G4Tubs* beapPipeCut = new G4Tubs("beapPipeCut", 0, beampipeOuterR, beampipeLength, 0, 360*deg);
+    //G4Tubs* beapPipeCut = new G4Tubs("beapPipeCut", 0, beampipeOuterR, beampipeLength, 0, 360*deg);
     
     //Do the cuts on the horizontal chamber
-    G4SubtractionSolid* chamberCut1 = new G4SubtractionSolid("Subtraction1", chamber_h, chamberCut_v, rotX90, G4ThreeVector());
-    G4SubtractionSolid* chamberCut3 = new G4SubtractionSolid("Subtraction3", chamberCut1, beapPipeCut, rotY90, G4ThreeVector(chmbLength,0,0));
-    G4SubtractionSolid* chamberCut5 = new G4SubtractionSolid("Subtraction5", chamberCut3, beapPipeCut, rotY90, G4ThreeVector(-chmbLength,0,0));
+    //G4SubtractionSolid* chamberCut1 = new G4SubtractionSolid("Subtraction1", chamber_h, chamberCut_v, rotX90, G4ThreeVector());
+    //G4SubtractionSolid* chamberCut3 = new G4SubtractionSolid("Subtraction3", chamberCut1, beapPipeCut, rotY90, G4ThreeVector(chmbLength,0,0));
+    //G4SubtractionSolid* chamberCut5 = new G4SubtractionSolid("Subtraction5", chamberCut3, beapPipeCut, rotY90, G4ThreeVector(-chmbLength,0,0));
     //Do the cuts on the vertical chamber
-    G4SubtractionSolid* chamberCut2 = new G4SubtractionSolid("Subtraction2", chamber_v, chamberCut_v, rotY90, G4ThreeVector());
-    G4SubtractionSolid* chamberCut4 = new G4SubtractionSolid("Subtraction4", chamberCut2, beapPipeCut, rotX90, G4ThreeVector(0,-chmbLength,0));
-    G4SubtractionSolid* chamberCut6 = new G4SubtractionSolid("Subtraction6", chamberCut4, beapPipeCut, rotX90, G4ThreeVector(0,chmbLength,0));
+    //G4SubtractionSolid* chamberCut2 = new G4SubtractionSolid("Subtraction2", chamber_v, chamberCut_v, rotY90, G4ThreeVector());
+    //G4SubtractionSolid* chamberCut4 = new G4SubtractionSolid("Subtraction4", chamberCut2, beapPipeCut, rotX90, G4ThreeVector(0,-chmbLength,0));
+    //G4SubtractionSolid* chamberCut6 = new G4SubtractionSolid("Subtraction6", chamberCut4, beapPipeCut, rotX90, G4ThreeVector(0,chmbLength,0));
     
     //Create and place the cutted horizontal chamber
-    G4LogicalVolume* log_chamber_h = new G4LogicalVolume(chamberCut5, stainless, "chamber_h_log");
-    new G4PVPlacement(rotY90, G4ThreeVector(0.0,0.0,0.0), log_chamber_h, "chamber_h_phys", logical_world, false, 0, true);
-    log_chamber_h->SetVisAttributes(G4Color::White());
+    //G4LogicalVolume* log_chamber_h = new G4LogicalVolume(chamberCut5, stainless, "chamber_h_log");
+    //new G4PVPlacement(rotY90, G4ThreeVector(0.0,0.0,0.0), log_chamber_h, "chamber_h_phys", logical_world, false, 0, true);
+    //log_chamber_h->SetVisAttributes(G4Color::White());
     
     //Create and place the cutted vertical chamber
-    G4LogicalVolume* log_chamber_v = new G4LogicalVolume(chamberCut6, stainless, "chamber_v_log");
-    new G4PVPlacement(rotX90, G4ThreeVector(0.0,0.0,0.0), log_chamber_v, "chamber_v_phys", logical_world, false, 0, true);
-    log_chamber_v->SetVisAttributes(G4Color::White());
+    //G4LogicalVolume* log_chamber_v = new G4LogicalVolume(chamberCut6, stainless, "chamber_v_log");
+    //new G4PVPlacement(rotX90, G4ThreeVector(0.0,0.0,0.0), log_chamber_v, "chamber_v_phys", logical_world, false, 0, true);
+    //log_chamber_v->SetVisAttributes(G4Color::White());
 
-    G4Cons* receiverCone = new G4Cons("receiverCone", 281.6/2, 309.1/2, 50.5/2, 59.7/2, 201.3/2, 0, 360*deg);
-    G4LogicalVolume* log_receiverCone = new G4LogicalVolume(receiverCone, stainless, "receiverCone_log");
-    new G4PVPlacement(rotX90, G4ThreeVector(0.0,-145.7,0.0), log_receiverCone, "receiverCone_phys", logical_world, false, 0, true);
-    log_receiverCone->SetVisAttributes(G4Color::White());
+    //G4Cons* receiverCone = new G4Cons("receiverCone", 281.6/2, 309.1/2, 50.5/2, 59.7/2, 201.3/2, 0, 360*deg);
+    //G4LogicalVolume* log_receiverCone = new G4LogicalVolume(receiverCone, stainless, "receiverCone_log");
+    //new G4PVPlacement(rotX90, G4ThreeVector(0.0,-145.7,0.0), log_receiverCone, "receiverCone_phys", logical_world, false, 0, true);
+    //log_receiverCone->SetVisAttributes(G4Color::White());
 
     //Create and place the beam pipe downstream of the chamber
-    G4Tubs* beamPipe_f = new G4Tubs("chamber_f", beampipeInnerR, beampipeOuterR, beampipeLength, 0, 360*deg);
-    G4LogicalVolume* log_beamPipe_f = new G4LogicalVolume(beamPipe_f, stainless, "beamPipe_f_log");
-    new G4PVPlacement(0, G4ThreeVector(0.0,0.0,chmbLength+8.0*mm+beampipeLength), log_beamPipe_f, "beamPipe_f_phys", logical_world, false, 0, true);
-    log_beamPipe_f->SetVisAttributes(G4Color::White());
+    //G4Tubs* beamPipe_f = new G4Tubs("chamber_f", beampipeInnerR, beampipeOuterR, beampipeLength, 0, 360*deg);
+    //G4LogicalVolume* log_beamPipe_f = new G4LogicalVolume(beamPipe_f, stainless, "beamPipe_f_log");
+    //new G4PVPlacement(0, G4ThreeVector(0.0,0.0,chmbLength+8.0*mm+beampipeLength), log_beamPipe_f, "beamPipe_f_phys", logical_world, false, 0, true);
+    //log_beamPipe_f->SetVisAttributes(G4Color::White());
     
     //Create and place the beam pipe flange downstream of the chamber
-    G4Tubs* beampipeFlange = new G4Tubs("beampipeFlange", beampipeOuterR*mm , (130/2)*mm, (11.3/2)*mm, 0, 360*deg);
-    G4LogicalVolume* log_beampipeFlange = new G4LogicalVolume(beampipeFlange, stainless, "beampipeFlange_log");
-    new G4PVPlacement(0, G4ThreeVector(0,0,chmbLength+8.0*mm+(beampipeLength*2)+(11.3/2)), log_beampipeFlange, "beampipeFlange_phys", logical_world, false, 0, true);
-    log_beampipeFlange->SetVisAttributes(G4Color::White());
+    //G4Tubs* beampipeFlange = new G4Tubs("beampipeFlange", beampipeOuterR*mm , (130/2)*mm, (11.3/2)*mm, 0, 360*deg);
+    //G4LogicalVolume* log_beampipeFlange = new G4LogicalVolume(beampipeFlange, stainless, "beampipeFlange_log");
+    //new G4PVPlacement(0, G4ThreeVector(0,0,chmbLength+8.0*mm+(beampipeLength*2)+(11.3/2)), log_beampipeFlange, "beampipeFlange_phys", logical_world, false, 0, true);
+    //log_beampipeFlange->SetVisAttributes(G4Color::White());
 
     //Create and place the flages on the left and right of the chamber
-    G4Tubs* sideFlange = new G4Tubs("sideFlange", 0, chmbOuterR, chmbLength/20, 0, 360*deg);
-    G4LogicalVolume* log_sideFlange = new G4LogicalVolume(sideFlange, stainless, "sideFlange_log");
-    new G4PVPlacement(rotY90, G4ThreeVector(chmbLength+chmbLength/20,0.0,0.0), log_sideFlange, "sideFlange_L_phys", logical_world, false, 0, true);
-    new G4PVPlacement(rotY90, G4ThreeVector(-chmbLength-chmbLength/20,0.0,0.0), log_sideFlange, "sideFlange_R_phys", logical_world, false, 1, true);
-    log_sideFlange->SetVisAttributes(G4Color::White());
+    //G4Tubs* sideFlange = new G4Tubs("sideFlange", 0, chmbOuterR, chmbLength/20, 0, 360*deg);
+    //G4LogicalVolume* log_sideFlange = new G4LogicalVolume(sideFlange, stainless, "sideFlange_log");
+    //new G4PVPlacement(rotY90, G4ThreeVector(chmbLength+chmbLength/20,0.0,0.0), log_sideFlange, "sideFlange_L_phys", logical_world, false, 0, true);
+    //new G4PVPlacement(rotY90, G4ThreeVector(-chmbLength-chmbLength/20,0.0,0.0), log_sideFlange, "sideFlange_R_phys", logical_world, false, 1, true);
+    //log_sideFlange->SetVisAttributes(G4Color::White());
   }
 
   //PIPs detectors inside JENSA
@@ -354,10 +495,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
       fLScin_phys.push_back(new G4PVPlacement(rotation,position,logical_LScin,LScinName[j],logical_world,false,j,true));
       if(coverLS){
         coverLScin_phys.push_back(new G4PVPlacement(rotation,position,logical_coverLScin,"coverLScin_phys",logical_world,false,j,true));
-        G4ThreeVector position_covb = G4ThreeVector(LScinCovBXpos[j]*mm,LScinCovBYpos[j]*mm,LScinZpos[j]*mm);
+        G4ThreeVector position_covb = G4ThreeVector(LScinCovBXpos[j]*mm,LScinCovBYpos[j]*mm,LScinCovBZpos[j]*mm);
         //G4ThreeVector position_covb = G4ThreeVector(LScinCovBXpos[j]*mm,LScinCovBYpos[j]*mm,-30.1*mm);
         coverbLScin_phys.push_back(new G4PVPlacement(rotation,position_covb,logical_coverbLScin,"coverbLScin_phys",logical_world,false,j,true));
-        G4ThreeVector position_covf = G4ThreeVector(LScinCovFXpos[j]*mm,LScinCovFYpos[j]*mm,LScinZpos[j]*mm);
+        G4ThreeVector position_covf = G4ThreeVector(LScinCovFXpos[j]*mm,LScinCovFYpos[j]*mm,LScinCovFZpos[j]*mm);
         //G4ThreeVector position_covf = G4ThreeVector(LScinCovFXpos[j]*mm,LScinCovFYpos[j]*mm,27.71*mm);
         coverfLScin_phys.push_back(new G4PVPlacement(rotation,position_covf,logical_coverfLScin,"coverfLScin_phys",logical_world,false,j,true));
       }
@@ -483,13 +624,13 @@ void DetectorConstruction::NeutronDetectorsMap()
 {
   if(LScin)
   {
-    LScinMap.open("../detectorMap/LScin_12.dat",std::ios::in);
+    LScinMap.open("../detectorMap/LScin.dat",std::ios::in);
     if (LScinMap.is_open()) G4cout<<"The LScinMap external file is open!"<<G4endl;
     while (true) 
     {
       ++LScinNum;
       //G4cout<<LScinNum<<G4endl;
-      LScinMap >> name >> xpos >> ypos >> zpos >> xangle >> yangle >> zangle >> xcovfpos >> ycovfpos >> xcovbpos >> ycovbpos;
+      LScinMap >> name >> xpos >> ypos >> zpos >> xangle >> yangle >> zangle >> xcovfpos >> ycovfpos >> zcovfpos >> xcovbpos >> ycovbpos >> zcovbpos;
       LScinName.push_back(name);
       LScinXpos.push_back(xpos);
       LScinYpos.push_back(ypos);
@@ -499,8 +640,10 @@ void DetectorConstruction::NeutronDetectorsMap()
       LScinZangle.push_back(zangle);
       LScinCovFXpos.push_back(xcovfpos);
       LScinCovFYpos.push_back(ycovfpos);
+      LScinCovFZpos.push_back(zcovfpos);
       LScinCovBXpos.push_back(xcovbpos);
       LScinCovBYpos.push_back(ycovbpos);
+      LScinCovBZpos.push_back(zcovbpos);
       std::getline(LScinMap, line);
 
       if (LScinMap.eof()){break;}
