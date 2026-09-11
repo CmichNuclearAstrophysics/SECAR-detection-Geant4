@@ -7,7 +7,7 @@
 
 /run/numberOfThreads 4
 /run/initialize
-/run/printProgress 20000000
+/run/printProgress 100000
 
 #/process/had/particle_hp/skip_missing_isotopes true
 #/process/had/particle_hp/do_not_adjust_final_state true
@@ -16,4 +16,4 @@
 #/process/had/particle_hp/verbose 2
 
 #/control/execute cobalt.mac
-/run/beamOn 100000000
+/run/beamOn 1000000
