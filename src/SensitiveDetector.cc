@@ -24,6 +24,8 @@
 // ********************************************************************
 //
 // Author: Pelagia Tsintari, pelagia.tsin@gmail.com
+// Edits by Ava Nykamp, nykam1am@cmich.edu
+//
 //
 // Code based on the advanced example radioprotection
 
@@ -70,6 +72,28 @@ G4bool SensitiveDetector::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   G4int charge = aTrack->GetDefinition()->GetPDGCharge();  
   G4int baryon = aTrack->GetDefinition()->GetBaryonNumber();
   G4String particleName = aTrack->GetDefinition()->GetParticleName();
+
+
+
+
+  //ADDING DETECTION THRESHOLD ENERGIES
+  const G4double H_threshold = 0.2*MeV;
+  const G4double C_threshold = 9.00*MeV;
+
+  // Hydrogen recoil (proton)
+  if (charge == 1 && baryon == 1)
+  {
+      if (edep < H_threshold)
+          return false;
+  }
+
+  // Carbon recoil
+  if (charge == 6 && baryon == 12)
+  {
+      if (edep < C_threshold)
+          return false;
+  }
+
 
 
   if (ekin==0.) return false;
@@ -133,6 +157,25 @@ void SensitiveDetector::EndOfEvent(G4HCofThisEvent*)
   {
     G4double edep = (*fHitsCollection)[i]->GetEdep();
     totalEdep = totalEdep + edep;
+
+
+    //const G4double H_threshold = 0.2*MeV;
+    //const G4double C_threshold = 9.00*MeV;
+
+    //if (Z == 1 && A == 1)
+    //{
+    //    if (totalEdep < H_threshold)
+    //        return;
+    //}
+
+    //if (Z == 6 && A == 12)
+    //{
+    //    if (totalEdep < C_threshold)
+    //        return;
+    //}
+
+
+    
     particleName  = (*fHitsCollection)[0]->GetParticleName();
     Ekin  = (*fHitsCollection)[0]->GetEkin();
     A     = (*fHitsCollection)[0]->GetBaryonNumber();
