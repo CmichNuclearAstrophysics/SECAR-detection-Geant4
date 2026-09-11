@@ -28,7 +28,7 @@
 // Code based on basic example B02
 
 
-#include "SensitiveDetectorHit_IC.hh"
+#include "SensitiveDetectorHit.hh"
 #include "G4UnitsTable.hh"
 #include "G4VVisManager.hh"
 #include "G4Circle.hh"
@@ -38,43 +38,67 @@
 #include <iomanip>
 
 // THIS IS NECESSARY FOR MT MODE
-G4ThreadLocal G4Allocator<SensitiveDetectorHit_IC>* SensitiveDetectorHit_ICAllocator=0;
+G4ThreadLocal G4Allocator<SensitiveDetectorHit>* SensitiveDetectorHitAllocator=0;
 
-SensitiveDetectorHit_IC::SensitiveDetectorHit_IC()
+SensitiveDetectorHit::SensitiveDetectorHit()
  : G4VHit(),
    fId(0),
    fEdep(0),
-   fEkin(0.)
+   fEkin(0.),
+   fPos_x(0.),
+   fPos_y(0.),
+   fPos_z(0.),
+   fMomentum_x(0.),
+   fMomentum_y(0.),
+   fMomentum_z(0.),
+   fTheta(0.),
+   fPhi(0.)
 {}
 
-SensitiveDetectorHit_IC::~SensitiveDetectorHit_IC() 
+SensitiveDetectorHit::~SensitiveDetectorHit() 
 {}
 
-SensitiveDetectorHit_IC::SensitiveDetectorHit_IC(const SensitiveDetectorHit_IC& right)
+SensitiveDetectorHit::SensitiveDetectorHit(const SensitiveDetectorHit& right)
   : G4VHit()
 {
   fId         = right.fId;
   fEkin       = right.fEkin;
   fEdep       = right.fEdep;
+  fPos_x      = right.fPos_x;
+  fPos_y      = right.fPos_y;
+  fPos_z      = right.fPos_z;
+  fMomentum_x = right.fMomentum_x;
+  fMomentum_y = right.fMomentum_y;
+  fMomentum_z = right.fMomentum_z;
+  fTheta      = right.fTheta;
+  fPhi        = right.fPhi;
 }
 
-const SensitiveDetectorHit_IC& SensitiveDetectorHit_IC::operator=(const SensitiveDetectorHit_IC& right)
+const SensitiveDetectorHit& SensitiveDetectorHit::operator=(const SensitiveDetectorHit& right)
 {
   fId         = right.fId;
   fEdep       = right.fEdep;
   fEkin       = right.fEkin;
+  fPos_x      = right.fPos_x;
+  fPos_y      = right.fPos_y;
+  fPos_z      = right.fPos_z;
+  fMomentum_x = right.fMomentum_x;
+  fMomentum_y = right.fMomentum_y;
+  fMomentum_z = right.fMomentum_z;
+  fTheta      = right.fTheta;
+  fPhi        = right.fPhi;
   return *this;
 }
 
-G4int SensitiveDetectorHit_IC::operator==(const SensitiveDetectorHit_IC& right) const
+G4int SensitiveDetectorHit::operator==(const SensitiveDetectorHit& right) const
 {
   return ( this == &right ) ? 1 : 0;
 }
 
-void SensitiveDetectorHit_IC::Draw()
+void SensitiveDetectorHit::Draw()
 {}
 
-void SensitiveDetectorHit_IC::Print()
+void SensitiveDetectorHit::Print()
 {
   G4cout<< "HIT: "<< fId << std::setw(6) <<  "Ekin: " <<G4BestUnit(fEkin,"Energy")<< G4endl;
 }
