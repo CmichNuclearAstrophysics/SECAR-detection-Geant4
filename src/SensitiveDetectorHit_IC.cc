@@ -28,7 +28,7 @@
 // Code based on basic example B02
 
 
-#include "SensitiveDetectorHit_IC.hh"
+#include "SensitiveDetectorHit_SiMon.hh"
 #include "G4UnitsTable.hh"
 #include "G4VVisManager.hh"
 #include "G4Circle.hh"
@@ -38,19 +38,19 @@
 #include <iomanip>
 
 // THIS IS NECESSARY FOR MT MODE
-G4ThreadLocal G4Allocator<SensitiveDetectorHit_IC>* SensitiveDetectorHit_ICAllocator=0;
+G4ThreadLocal G4Allocator<SensitiveDetectorHit_SiMon>* SensitiveDetectorHit_SiMonAllocator=0;
 
-SensitiveDetectorHit_IC::SensitiveDetectorHit_IC()
+SensitiveDetectorHit_SiMon::SensitiveDetectorHit_SiMon()
  : G4VHit(),
    fId(0),
    fEdep(0),
    fEkin(0.)
 {}
 
-SensitiveDetectorHit_IC::~SensitiveDetectorHit_IC() 
+SensitiveDetectorHit_SiMon::~SensitiveDetectorHit_SiMon() 
 {}
 
-SensitiveDetectorHit_IC::SensitiveDetectorHit_IC(const SensitiveDetectorHit_IC& right)
+SensitiveDetectorHit_SiMon::SensitiveDetectorHit_SiMon(const SensitiveDetectorHit_SiMon& right)
   : G4VHit()
 {
   fId         = right.fId;
@@ -58,7 +58,7 @@ SensitiveDetectorHit_IC::SensitiveDetectorHit_IC(const SensitiveDetectorHit_IC& 
   fEdep       = right.fEdep;
 }
 
-const SensitiveDetectorHit_IC& SensitiveDetectorHit_IC::operator=(const SensitiveDetectorHit_IC& right)
+const SensitiveDetectorHit_SiMon& SensitiveDetectorHit_SiMon::operator=(const SensitiveDetectorHit_SiMon& right)
 {
   fId         = right.fId;
   fEdep       = right.fEdep;
@@ -66,15 +66,15 @@ const SensitiveDetectorHit_IC& SensitiveDetectorHit_IC::operator=(const Sensitiv
   return *this;
 }
 
-G4int SensitiveDetectorHit_IC::operator==(const SensitiveDetectorHit_IC& right) const
+G4int SensitiveDetectorHit_SiMon::operator==(const SensitiveDetectorHit_SiMon& right) const
 {
   return ( this == &right ) ? 1 : 0;
 }
 
-void SensitiveDetectorHit_IC::Draw()
+void SensitiveDetectorHit_SiMon::Draw()
 {}
 
-void SensitiveDetectorHit_IC::Print()
+void SensitiveDetectorHit_SiMon::Print()
 {
   G4cout<< "HIT: "<< fId << std::setw(6) <<  "Ekin: " <<G4BestUnit(fEkin,"Energy")<< G4endl;
 }
