@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 // Author: Pelagia Tsintari, pelagia.tsin@gmail.com
-// Edits by Ava Nykamp, avanykamp@gmail.com
+// Edits by Ava Nykamp, nykam1am@cmich.edu
 //
 
 #include "DetectorConstruction.hh"
